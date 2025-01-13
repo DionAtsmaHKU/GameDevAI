@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -70,5 +71,28 @@ public abstract class BTDecorator : BTBaseNode
     {
         base.SetupBlackboard(blackboard);
         child.SetupBlackboard(blackboard);
+    }
+}
+
+public class BTConditionalDecorator : BTDecorator
+{
+    private Func<bool> condition;
+
+    public BTConditionalDecorator(BTBaseNode child, Func<bool> condition) : base(child)
+    {
+        this.child = child;
+        this.condition = condition;
+    }
+
+    protected override TaskStatus OnUpdate()
+    {
+        if (condition())
+        {
+            return child.Tick();
+        }
+        else
+        {
+            return TaskStatus.Success;
+        }
     }
 }
