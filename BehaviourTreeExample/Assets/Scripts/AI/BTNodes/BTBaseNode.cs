@@ -78,7 +78,7 @@ public class BTConditionalDecorator : BTDecorator
 {
     private Func<bool> condition;
 
-    public BTConditionalDecorator(BTBaseNode child, Func<bool> condition) : base(child)
+    public BTConditionalDecorator(Func<bool> condition, BTBaseNode child) : base(child)
     {
         this.child = child;
         this.condition = condition;
@@ -92,7 +92,7 @@ public class BTConditionalDecorator : BTDecorator
         }
         else
         {
-            return TaskStatus.Success;
+            return TaskStatus.Failed;
         }
     }
 }
