@@ -9,13 +9,9 @@ public class BTGrab : BTBaseNode
 
     }
 
-    protected override void OnEnter()
-    {
-
-    }
-
     protected override TaskStatus OnUpdate()
     {
+        Debug.Log("As the kids say: Yoink");
         return TaskStatus.Success;
     }
 }

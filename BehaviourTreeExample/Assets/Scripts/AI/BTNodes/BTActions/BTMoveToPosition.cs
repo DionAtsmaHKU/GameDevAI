@@ -34,9 +34,9 @@ public class BTMoveToPosition : BTBaseNode
     {
         if (agent == null || (blackboard.GetVariable<bool>(VariableNames.SEES_PLAYER) 
                               && blackboard.GetVariable<State>(VariableNames.STATE) == State.PATROLLING)) 
-                              { return TaskStatus.Failed; }
+                              { Debug.Log("STOP PATROLLIGN NOWWWWWWWWWW"); return TaskStatus.Failed; }
         if (agent.pathPending) { return TaskStatus.Running; }
-        if (agent.hasPath && agent.path.status == NavMeshPathStatus.PathInvalid) { return TaskStatus.Failed; }
+        if (agent.hasPath && agent.path.status == NavMeshPathStatus.PathInvalid) { Debug.Log("Invalid path"); return TaskStatus.Failed; }
         if (agent.pathEndPosition != targetPosition)
         {
             agent.SetDestination(targetPosition);

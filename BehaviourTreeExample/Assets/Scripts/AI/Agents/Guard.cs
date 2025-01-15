@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -7,6 +8,9 @@ public class Guard : MonoBehaviour
     [SerializeField] private float moveSpeed = 3;
     [SerializeField] private float stoppingDistance = 0.1f;
     [SerializeField] private GameObject player;
+    [SerializeField] private List<Transform> waypoints = new List<Transform>();
+    [SerializeField] private Transform weapon;
+
     private BTBaseNode tree;
     private NavMeshAgent agent;
     private Animator animator;
@@ -32,15 +36,19 @@ public class Guard : MonoBehaviour
     private void Start()
     {
         //Create your Behaviour Tree here!
-        blackboard.SetVariable(VariableNames.TARGET_POSITION, new Vector3(0, 0, 0));
-        blackboard.SetVariable(VariableNames.TARGET_POSITION_ALTERNATE, new Vector3(3, 0, 0));
+        blackboard.SetVariable(VariableNames.TARGET_POSITION_A, waypoints[0].position);
+        blackboard.SetVariable(VariableNames.TARGET_POSITION_B, waypoints[2].position);
+        blackboard.SetVariable(VariableNames.TARGET_POSITION_C, waypoints[2].position);
+        blackboard.SetVariable(VariableNames.TARGET_POSITION_D, waypoints[3].position);
+        blackboard.SetVariable(VariableNames.TARGET_POSITION_WEAPON, weapon.position);
+
         blackboard.SetVariable(VariableNames.HAS_WEAPON, false);
         blackboard.SetVariable(VariableNames.STATE, State.PATROLLING);
         blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
 
         tree = new BTSelector(
             new BTConditionalDecorator(IsSearching, new BTSequence(
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION, stoppingDistance),
+                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_WEAPON, stoppingDistance),
                 new BTGrab())),
 
             new BTConditionalDecorator(InAttackRange, new BTAttack()),
@@ -50,9 +58,13 @@ public class Guard : MonoBehaviour
                 new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_PLAYER, stoppingDistance))),
 
             new BTSequence(
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION, stoppingDistance),
+                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_A, stoppingDistance),
                 new BTWait(1f),
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_ALTERNATE, stoppingDistance),
+                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_B, stoppingDistance),
+                new BTWait(1f),
+                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_C, stoppingDistance),
+                new BTWait(1f),
+                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_D, stoppingDistance),
                 new BTWait(1f)
             ));
         tree.SetupBlackboard(blackboard);
@@ -63,7 +75,8 @@ public class Guard : MonoBehaviour
         SeePlayerCheck();
         TaskStatus result = tree.Tick();
         blackboard.SetVariable(VariableNames.TARGET_POSITION_PLAYER, player.transform.position);
-        // Debug.Log(blackboard.GetVariable<State>(VariableNames.STATE));
+        Debug.Log(blackboard.GetVariable<State>(VariableNames.STATE));
+        Debug.Log(blackboard.GetVariable<Vector3>(VariableNames.TARGET_POSITION_WEAPON));
     }
 
     private bool CoinFlip()
@@ -105,9 +118,9 @@ public class Guard : MonoBehaviour
     {
         if (blackboard.GetVariable<bool>(VariableNames.HAS_WEAPON))
         {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     private bool GuardIsSearching()

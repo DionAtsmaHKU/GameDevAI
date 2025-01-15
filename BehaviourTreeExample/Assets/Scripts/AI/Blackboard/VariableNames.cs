@@ -9,8 +9,11 @@ public enum State
 
 public static class VariableNames
 {
-    public const string TARGET_POSITION = "TARGET_POSITION";
-    public const string TARGET_POSITION_ALTERNATE = "TARGET_POSITION_ALTERNATE";
+    public const string TARGET_POSITION_A = "TARGET_POSITION_A";
+    public const string TARGET_POSITION_B = "TARGET_POSITION_B";
+    public const string TARGET_POSITION_C = "TARGET_POSITION_C";
+    public const string TARGET_POSITION_D = "TARGET_POSITION_D";
+    public const string TARGET_POSITION_WEAPON = "TARGET_POSITION_WEAPON";
     public const string TARGET_POSITION_PLAYER = "TARGET_POSITION_PLAYER";
     public const string HAS_WEAPON = "HAS_WEAPON";
     public const string IS_SEARCHING = "IS_SEARCHING";
