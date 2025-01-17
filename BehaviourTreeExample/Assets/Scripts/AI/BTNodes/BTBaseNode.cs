@@ -74,6 +74,7 @@ public abstract class BTDecorator : BTBaseNode
     }
 }
 
+// Used for conditional logic in the behaviour tree.
 public class BTConditionalDecorator : BTDecorator
 {
     private Func<bool> condition;

@@ -11,7 +11,6 @@ public class BTGrab : BTBaseNode
 
     protected override TaskStatus OnUpdate()
     {
-        Debug.Log("As the kids say: Yoink");
         return TaskStatus.Success;
     }
 }

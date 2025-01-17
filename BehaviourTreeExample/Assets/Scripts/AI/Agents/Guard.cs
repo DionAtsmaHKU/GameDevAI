@@ -79,6 +79,7 @@ public class Guard : MonoBehaviour
         Debug.Log(blackboard.GetVariable<Vector3>(VariableNames.TARGET_POSITION_WEAPON));
     }
 
+    // Used for testing func / conditional decorator
     private bool CoinFlip()
     {
         float coin = UnityEngine.Random.Range(0f, 1f);
@@ -89,11 +90,13 @@ public class Guard : MonoBehaviour
         else { return false; }
     }
 
+    // Used for testing func / conditional decorator
     private bool ReturnFalse()
     {
         return false;
     }
 
+    // Will use a raycast or the like eventually, currently used for easy testing
     private bool GuardSeesPlayer()
     {
         if (player.transform.position.z > 0f)
@@ -105,6 +108,9 @@ public class Guard : MonoBehaviour
         return false;
     }
 
+    // I'm not sure which of these two functions is redundant, probably the one above^,
+    // maybe I could make it a simple funciton that returns true/false only based on the variable?
+    // This function however seems necessary in Update.
     private void SeePlayerCheck()
     {
         if (player.transform.position.z > 0f)
@@ -114,6 +120,8 @@ public class Guard : MonoBehaviour
         else { blackboard.SetVariable(VariableNames.SEES_PLAYER, false); }
     }
 
+    // This function is a bit backwards, since the condition is met when the 
+    // guard has NO weapon. Might have to chnage the variable name.
     private bool GuardHasWeapon()
     {
         if (blackboard.GetVariable<bool>(VariableNames.HAS_WEAPON))

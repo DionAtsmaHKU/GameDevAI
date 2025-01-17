@@ -27,14 +27,21 @@ public class BTMoveToPosition : BTBaseNode
         if (BBtargetPosition == VariableNames.TARGET_POSITION_PLAYER)
         {
             blackboard.SetVariable(VariableNames.STATE, State.CHASING);
-        } else { blackboard.SetVariable(VariableNames.STATE, State.PATROLLING); }
+        } 
+        else if (BBtargetPosition == VariableNames.TARGET_POSITION_WEAPON)
+        {
+            return;
+        }
+        else { blackboard.SetVariable(VariableNames.STATE, State.PATROLLING); }
     }
 
+    // the start of this function all seems a little overcomplicated, I'll have to see if there's a better way
+    // of handeling the different types of moving (to a static/moving point).
     protected override TaskStatus OnUpdate()
     {
         if (agent == null || (blackboard.GetVariable<bool>(VariableNames.SEES_PLAYER) 
-                              && blackboard.GetVariable<State>(VariableNames.STATE) == State.PATROLLING)) 
-                              { Debug.Log("STOP PATROLLIGN NOWWWWWWWWWW"); return TaskStatus.Failed; }
+                              && blackboard.GetVariable<State>(VariableNames.STATE) == State.PATROLLING))
+                              { Debug.Log("Stop patrolling NOW"); return TaskStatus.Failed; }
         if (agent.pathPending) { return TaskStatus.Running; }
         if (agent.hasPath && agent.path.status == NavMeshPathStatus.PathInvalid) { Debug.Log("Invalid path"); return TaskStatus.Failed; }
         if (agent.pathEndPosition != targetPosition)

@@ -31,7 +31,7 @@ public class Rogue : MonoBehaviour
         blackboard.SetVariable(VariableNames.STATE, State.CHASING);
 
         tree = new BTSelector(
-            new BTConditionalDecorator(TestFunc, new BTAttack()),
+            new BTConditionalDecorator(TestFunc, new BTAttack()), // Still need to implement smoke attack
 
             new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_PLAYER, stoppingDistance)
             );
@@ -43,6 +43,7 @@ public class Rogue : MonoBehaviour
         tree?.Tick();
     }
 
+    // Used for testfunc
     private bool ReturnFalse()
     {
         return false;
