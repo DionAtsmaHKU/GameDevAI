@@ -1,16 +1,33 @@
-using System.Collections;
-using System.Collections.Generic;
+using UnityEngine.AI;
 using UnityEngine;
 
 public class BTGrab : BTBaseNode
 {
-    public BTGrab()
-    {
+    private NavMeshAgent agent;
+    private Vector3 targetPosition;
+    private float keepDistance;
+    private string targetString;
 
+    public BTGrab(NavMeshAgent agent, string target, float keepDistance)
+    {
+        this.agent = agent;
+        targetString = target;
+        this.keepDistance = keepDistance;
+    }
+
+    protected override void OnEnter()
+    {
+        targetPosition = blackboard.GetVariable<Vector3>(targetString);
     }
 
     protected override TaskStatus OnUpdate()
     {
-        return TaskStatus.Success;
+        if (Vector3.Distance(agent.transform.position, targetPosition) <= keepDistance)
+        {
+            Debug.Log("GRAB !");
+            blackboard.SetVariable(VariableNames.HAS_WEAPON, true);
+            return TaskStatus.Success;
+        }
+        return TaskStatus.Failed;
     }
 }

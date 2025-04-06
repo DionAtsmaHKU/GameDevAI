@@ -1,5 +1,4 @@
-﻿using System;
-public enum State
+﻿public enum State
 {
     PATROLLING = 0,
     SEARCHING = 1,

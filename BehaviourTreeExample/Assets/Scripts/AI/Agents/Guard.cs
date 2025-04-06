@@ -19,7 +19,6 @@ public class Guard : MonoBehaviour
     // private static event Func<bool> TestFunc;
     private static event Func<bool> SeesPlayer;
     private static event Func<bool> HasWeapon;
-    private static event Func<bool> IsSearching;
     private static event Func<bool> InAttackRange;
 
     private void Awake()
@@ -29,7 +28,6 @@ public class Guard : MonoBehaviour
         // TestFunc += ReturnFalse;
         SeesPlayer += GuardSeesPlayer;
         HasWeapon += GuardHasWeapon;
-        IsSearching += GuardIsSearching;
         InAttackRange += GuardInAttackRange;
     }
 
@@ -47,17 +45,23 @@ public class Guard : MonoBehaviour
         blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
 
         tree = new BTSelector(
-            new BTConditionalDecorator(IsSearching, new BTSequence(
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_WEAPON, stoppingDistance),
-                new BTGrab())),
-
             new BTConditionalDecorator(InAttackRange, new BTAttack()),
 
             new BTConditionalDecorator(SeesPlayer, new BTSelector(
-                new BTConditionalDecorator(HasWeapon, new BTStartSearch()),
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_PLAYER, stoppingDistance))),
+                new BTConditionalDecorator(HasWeapon, new BTSequence(
+                    new BTSetState(State.CHASING),
+                    new BTChasePlayer(agent, moveSpeed, stoppingDistance))
+                ),
+                new BTSequence(
+                    new BTSetState(State.SEARCHING),
+                    new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_WEAPON, stoppingDistance),
+                    new BTGrab(agent, VariableNames.TARGET_POSITION_WEAPON, stoppingDistance)
+                ))
+            ),
 
+            // new BTRepeatUntilFail(
             new BTSequence(
+                new BTSetState(State.PATROLLING),
                 new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_A, stoppingDistance),
                 new BTWait(1f),
                 new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_B, stoppingDistance),
@@ -66,7 +70,9 @@ public class Guard : MonoBehaviour
                 new BTWait(1f),
                 new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_D, stoppingDistance),
                 new BTWait(1f)
-            ));
+            )
+            //)
+        ); 
         tree.SetupBlackboard(blackboard);
     }
 
@@ -120,25 +126,25 @@ public class Guard : MonoBehaviour
         else { blackboard.SetVariable(VariableNames.SEES_PLAYER, false); }
     }
 
-    // This function is a bit backwards, since the condition is met when the 
-    // guard has NO weapon. Might have to chnage the variable name.
     private bool GuardHasWeapon()
     {
         if (blackboard.GetVariable<bool>(VariableNames.HAS_WEAPON))
-        {
-            return false;
-        }
-        return true;
-    }
-
-    private bool GuardIsSearching()
-    {
-        if (blackboard.GetVariable<bool>(VariableNames.IS_SEARCHING))
         {
             return true;
         }
         return false;
     }
+
+    /*
+    private bool GuardIsSearching()
+    {
+        if (blackboard.GetVariable<bool>(VariableNames.IS_SEARCHING) && !blackboard.GetVariable<bool>(VariableNames.HAS_WEAPON))
+        {
+            return true;
+        }
+        return false;
+    }
+    */
 
     private bool GuardInAttackRange()
     {
