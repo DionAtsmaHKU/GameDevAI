@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UIElements;
@@ -8,6 +10,7 @@ using static UnityEngine.GraphicsBuffer;
 public class Guard : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 3;
+    [SerializeField] private float stunTime = 3;
     [SerializeField] private float stoppingDistance = 0.1f;
     [SerializeField] private GameObject player;
     [SerializeField] private List<Transform> waypoints = new List<Transform>();
@@ -49,6 +52,7 @@ public class Guard : MonoBehaviour
         blackboard.SetVariable(VariableNames.TARGET_POSITION_WEAPON, weapon.position);
 
         blackboard.SetVariable(VariableNames.HAS_WEAPON, false);
+        blackboard.SetVariable(VariableNames.IS_STUNNED, false);
         blackboard.SetVariable(VariableNames.STATE, State.PATROLLING);
         blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
 
@@ -94,6 +98,43 @@ public class Guard : MonoBehaviour
         Debug.Log(blackboard.GetVariable<Vector3>(VariableNames.TARGET_POSITION_WEAPON));
     }
 
+    public void Stun()
+    {
+        StartCoroutine(StunGuard());
+    }
+
+    private IEnumerator StunGuard()
+    {
+        blackboard.SetVariable(VariableNames.IS_STUNNED, true);
+        float oldSpeed = moveSpeed;
+        moveSpeed = 0;
+        agent.speed = 0;
+        Debug.Log("GUARD STUNNED");
+        yield return new WaitForSeconds(stunTime);
+        blackboard.SetVariable(VariableNames.IS_STUNNED, false);
+        agent.speed = oldSpeed;
+        moveSpeed = oldSpeed;
+    }
+
+    public bool IsStunned()
+    {
+        if (blackboard.GetVariable<bool>(VariableNames.IS_STUNNED))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool IsGuardAttacking()
+    {
+        if (blackboard.GetVariable<State>(VariableNames.STATE) == State.CHASING ||
+            blackboard.GetVariable<State>(VariableNames.STATE) == State.ATTACKING)
+        {
+            return true;
+        }
+        return false;
+    }
+
     // Used for testing func / conditional decorator
     private bool CoinFlip()
     {
@@ -111,63 +152,18 @@ public class Guard : MonoBehaviour
         return false;
     }
 
-    /*
-    // Will use a raycast or the like eventually, currently used for easy testing
-    private bool GuardSeesPlayer()
-    {
-        if (player.transform.position.z > 0f)
-        {
-            blackboard.SetVariable(VariableNames.SEES_PLAYER, true);
-            return true;
-        }
-        blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
-        return false;
-    }
-
-    // I'm not sure which of these two functions is redundant, probably the one above^,
-    // maybe I could make it a simple funciton that returns true/false only based on the variable?
-    // This function however seems necessary in Update.
-    private void SeePlayerCheck()
-    {
-        if (player.transform.position.z > 0f)
-        {
-            blackboard.SetVariable(VariableNames.SEES_PLAYER, true);
-        }
-        else { blackboard.SetVariable(VariableNames.SEES_PLAYER, false); }
-    }
-    */
-
-    /*
-    private void FOV()
-    {
-        Collider2D[] rangeCheck = Physics2D.OverlapCircleAll(transform.position, 10, playerLayer);
-
-        if (rangeCheck.Length > 0)
-        {
-            Transform target = rangeCheck[0].transform;
-            Vector2 directionToTarget = (target.position - transform.position).normalized;
-
-            if (Vector2.Angle(transform.up, directionToTarget) < angle / 2)
-            {
-                float distanceToTarget = Vector2.Distance(transform.position, target.position);
-
-                if (!Physics2D.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionLayer))
-                    CanSeePlayer = true;
-                else
-                    CanSeePlayer = false;
-            }
-            else
-                CanSeePlayer = false;
-        }
-        else if (CanSeePlayer)
-            CanSeePlayer = false;
-    }
-    */
-
     private bool SpotPlayerRaycast()
     {
+        if (blackboard.GetVariable<bool>(VariableNames.PLAYER_DEAD))
+            return false;
+
         Vector3 directionToTarget = (player.transform.position - head.position).normalized;
         float distanceToTarget = Vector3.Distance(head.position, player.transform.position);
+
+        //if (distanceToTarget > 5)
+        //    return false;
+
+
         if (Physics.Raycast(head.position, directionToTarget, distanceToTarget, playerLayer))
         {
             if (!Physics.Raycast(head.position, directionToTarget, distanceToTarget, wallLayer))
@@ -189,17 +185,6 @@ public class Guard : MonoBehaviour
         }
         return false;
     }
-
-    /*
-    private bool GuardIsSearching()
-    {
-        if (blackboard.GetVariable<bool>(VariableNames.IS_SEARCHING) && !blackboard.GetVariable<bool>(VariableNames.HAS_WEAPON))
-        {
-            return true;
-        }
-        return false;
-    }
-    */
 
     private bool GuardInAttackRange()
     {
