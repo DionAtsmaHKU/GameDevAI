@@ -37,7 +37,7 @@ public class Guard : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponentInChildren<Animator>();
         // TestFunc += ReturnFalse;
-        SeesPlayer += SpotPlayerRaycast;
+        SeesPlayer += GuardSeesPlayer;
         HasWeapon += GuardHasWeapon;
         InAttackRange += GuardInAttackRange;
     }
@@ -91,7 +91,7 @@ public class Guard : MonoBehaviour
     private void FixedUpdate()
     {
         // GuardSeesPlayer();
-        SpotPlayerRaycast();
+        SpotPlayerLinecast();
         TaskStatus result = tree.Tick();
         blackboard.SetVariable(VariableNames.TARGET_POSITION_PLAYER, player.transform.position);
         Debug.Log(blackboard.GetVariable<State>(VariableNames.STATE));
@@ -152,6 +152,30 @@ public class Guard : MonoBehaviour
         return false;
     }
 
+    private bool SpotPlayerLinecast()
+    {
+        if (blackboard.GetVariable<bool>(VariableNames.PLAYER_DEAD))
+            return false;
+
+        float distanceToTarget = Vector3.Distance(head.position, player.transform.position);
+
+        //if (distanceToTarget > 5)
+        //    return false;
+        Debug.Log(player.transform.position);
+
+        if (!Physics.Linecast(head.position, player.transform.position, wallLayer))
+        {
+            Debug.DrawLine(head.position, player.transform.position);
+            
+            blackboard.SetVariable(VariableNames.SEES_PLAYER, true);
+            return true;
+        }
+        Debug.DrawLine(head.position, player.transform.position);
+        blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
+        // Debug.Log("no player??");
+        return false;
+    }
+
     private bool SpotPlayerRaycast()
     {
         if (blackboard.GetVariable<bool>(VariableNames.PLAYER_DEAD))
@@ -174,6 +198,16 @@ public class Guard : MonoBehaviour
         }
         blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
         Debug.Log("no player??");
+        return false;
+    }
+
+    private bool GuardSeesPlayer()
+    {
+        if (blackboard.GetVariable<bool>(VariableNames.SEES_PLAYER) &&
+            !blackboard.GetVariable<bool>(VariableNames.PLAYER_DEAD))
+        {
+            return true;
+        }
         return false;
     }
 
