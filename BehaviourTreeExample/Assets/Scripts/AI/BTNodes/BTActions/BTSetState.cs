@@ -8,6 +8,9 @@ public class BTSetState : BTBaseNode
 
     protected override TaskStatus OnUpdate()
     {
+        if (blackboard.GetVariable<State>(VariableNames.STATE) == newState)
+            return TaskStatus.Success;
+        
         blackboard.SetVariable(VariableNames.STATE, newState);
         return TaskStatus.Success;
     }

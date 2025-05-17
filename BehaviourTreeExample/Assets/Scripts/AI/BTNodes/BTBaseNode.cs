@@ -95,24 +95,3 @@ public class BTConditionalDecorator : BTDecorator
         }
     }
 }
-
-/*
-public class BTRepeatUntilFail : BTDecorator
-{
-    public BTRepeatUntilFail(BTBaseNode child) : base(child)
-    {
-        this.child = child;
-    }
-
-    protected override TaskStatus OnUpdate()
-    {
-        var result = child.Tick();
-        if (result != TaskStatus.Failed)
-        {
-            Debug.Log("Repeating NOW");
-            return TaskStatus.Running;
-        }
-        return TaskStatus.Failed;
-    }
-}
-*/

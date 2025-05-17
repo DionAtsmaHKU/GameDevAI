@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UIElements;
@@ -18,6 +19,7 @@ public class Guard : MonoBehaviour
     [SerializeField] private Transform head;
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private LayerMask wallLayer;
+    [SerializeField] private TextMeshProUGUI stateUI;
 
     [Range(1, 360)] public float angle = 180f;
 
@@ -71,7 +73,6 @@ public class Guard : MonoBehaviour
                 ))
             ),
 
-            // new BTRepeatUntilFail(
             new BTSequence(
                 new BTSetState(State.PATROLLING),
                 new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_A, stoppingDistance),
@@ -83,18 +84,17 @@ public class Guard : MonoBehaviour
                 new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_D, stoppingDistance),
                 new BTWait(1f)
             )
-            //)
         ); 
         tree.SetupBlackboard(blackboard);
     }
 
     private void FixedUpdate()
     {
-        // GuardSeesPlayer();
         SpotPlayerLinecast();
         TaskStatus result = tree.Tick();
         blackboard.SetVariable(VariableNames.TARGET_POSITION_PLAYER, player.transform.position);
         Debug.Log(blackboard.GetVariable<State>(VariableNames.STATE));
+        stateUI.text = "Current State: \n" + blackboard.GetVariable<State>(VariableNames.STATE);
         Debug.Log(blackboard.GetVariable<Vector3>(VariableNames.TARGET_POSITION_WEAPON));
     }
 
@@ -135,23 +135,6 @@ public class Guard : MonoBehaviour
         return false;
     }
 
-    // Used for testing func / conditional decorator
-    private bool CoinFlip()
-    {
-        float coin = UnityEngine.Random.Range(0f, 1f);
-        if (coin > 0.5f)
-        {
-            return true;
-        }
-        else { return false; }
-    }
-
-    // Used for testing func / conditional decorator
-    private bool ReturnFalse()
-    {
-        return false;
-    }
-
     private bool SpotPlayerLinecast()
     {
         if (blackboard.GetVariable<bool>(VariableNames.PLAYER_DEAD))
@@ -159,8 +142,12 @@ public class Guard : MonoBehaviour
 
         float distanceToTarget = Vector3.Distance(head.position, player.transform.position);
 
-        //if (distanceToTarget > 5)
-        //    return false;
+        if (distanceToTarget > 5 && blackboard.GetVariable<State>(VariableNames.STATE) == State.CHASING)
+        {
+            blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
+            return false;
+        }
+
         Debug.Log(player.transform.position);
 
         if (!Physics.Linecast(head.position, player.transform.position, wallLayer))
@@ -172,32 +159,6 @@ public class Guard : MonoBehaviour
         }
         Debug.DrawLine(head.position, player.transform.position);
         blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
-        // Debug.Log("no player??");
-        return false;
-    }
-
-    private bool SpotPlayerRaycast()
-    {
-        if (blackboard.GetVariable<bool>(VariableNames.PLAYER_DEAD))
-            return false;
-
-        Vector3 directionToTarget = (player.transform.position - head.position).normalized;
-        float distanceToTarget = Vector3.Distance(head.position, player.transform.position);
-
-        //if (distanceToTarget > 5)
-        //    return false;
-
-
-        if (Physics.Raycast(head.position, directionToTarget, distanceToTarget, playerLayer))
-        {
-            if (!Physics.Raycast(head.position, directionToTarget, distanceToTarget, wallLayer))
-            {
-                blackboard.SetVariable(VariableNames.SEES_PLAYER, true);
-                return true;
-            }
-        }
-        blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
-        Debug.Log("no player??");
         return false;
     }
 

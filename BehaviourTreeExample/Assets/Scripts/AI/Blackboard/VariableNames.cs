@@ -3,7 +3,9 @@
     PATROLLING = 0,
     SEARCHING = 1,
     CHASING = 2,
-    ATTACKING = 3
+    ATTACKING = 3,
+    FOLLOWING = 4,
+    DEFENDING = 5
 }
 
 public static class VariableNames

@@ -28,7 +28,6 @@ public class BTMoveToPosition : BTBaseNode
     // of handeling the different types of moving (to a static/moving point).
     protected override TaskStatus OnUpdate()
     {
-        // This needs to become an interrupt!!!
         if (agent == null || (blackboard.GetVariable<bool>(VariableNames.SEES_PLAYER) 
                               && blackboard.GetVariable<State>(VariableNames.STATE) == State.PATROLLING))
                               { Debug.Log("Stop patrolling NOW"); return TaskStatus.Failed; }
@@ -65,6 +64,7 @@ public class BTChasePlayer : BTBaseNode
 
     protected override void OnEnter()
     {
+        blackboard.SetVariable<State>(VariableNames.STATE, State.CHASING);
         agent.speed = moveSpeed;
         agent.stoppingDistance = keepDistance;
         targetPosition = blackboard.GetVariable<Vector3>("TARGET_POSITION_PLAYER");
@@ -74,7 +74,6 @@ public class BTChasePlayer : BTBaseNode
     // of handeling the different types of moving (to a static/moving point).
     protected override TaskStatus OnUpdate()
     {
-        // This needs to become an interrupt!!!
         if (agent == null)
            return TaskStatus.Failed;
 
@@ -90,7 +89,6 @@ public class BTChasePlayer : BTBaseNode
 
         if (Vector3.Distance(agent.transform.position, targetPosition) <= keepDistance)
         {
-            Debug.Log("CHASING PLAYER WOOOOO YAEH");
             return TaskStatus.Success;
         }
         return TaskStatus.Running;
