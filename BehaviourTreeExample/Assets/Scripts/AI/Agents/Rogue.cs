@@ -37,14 +37,12 @@ public class Rogue : MonoBehaviour
 
         tree = new BTSelector(
             new BTConditionalDecorator(PlayerInDanger, new BTSequence(
-                new BTSetState(State.DEFENDING),
                 new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_COVER, stoppingDistance),
                 new BTStunEnemy(guard),
                 new BTWait(5)
             )),
 
             new BTSequence(
-                new BTSetState(State.FOLLOWING),
                 new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_PLAYER, stoppingDistance)
             ));
         tree.SetupBlackboard(blackboard);
@@ -54,6 +52,11 @@ public class Rogue : MonoBehaviour
         blackboard.SetVariable(VariableNames.TARGET_POSITION_PLAYER, player.transform.position);
         stateUI.text = "Current State: \n" + blackboard.GetVariable<State>(VariableNames.STATE);
         tree?.Tick();
+    }
+
+    private void UpdateUI(string nodeName)
+    {
+        stateUI.text = "Current Node: \n" + nodeName;
     }
 
     private bool IsPlayerInDanger()

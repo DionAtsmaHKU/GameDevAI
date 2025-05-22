@@ -6,7 +6,7 @@ public class BTSelector : BTComposite
 
     protected override TaskStatus OnUpdate()
     {
-        for (; currentIndex < children.Length; currentIndex++)
+        for (currentIndex = 0; currentIndex < children.Length; currentIndex++)
         {
             var result = children[currentIndex].Tick();
             switch (result)

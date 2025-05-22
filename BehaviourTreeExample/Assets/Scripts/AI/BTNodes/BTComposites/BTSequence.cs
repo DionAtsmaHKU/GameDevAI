@@ -1,15 +1,22 @@
+using System.Diagnostics;
+using UnityEngine;
+
 ///
 /// The Sequence node runs all its children in sequence one after another, only continues if a child return success, if one child fails, it returns failed itself
 ///
 public class BTSequence : BTComposite
 {
     private int currentIndex = 0;
+    private bool alwaysRestart = false;
 
-    public BTSequence(params BTBaseNode[] children) : base(children) { }
+    public BTSequence(params BTBaseNode[] children) : base(children)
+    { 
+    }
 
     protected override TaskStatus OnUpdate()
     {
-        for( ; currentIndex < children.Length; currentIndex++)
+
+        for(; currentIndex < children.Length; currentIndex++)
         {
             var result = children[currentIndex].Tick();
             switch (result) 
@@ -29,6 +36,7 @@ public class BTSequence : BTComposite
 
     protected override void OnExit()
     {
+        UnityEngine.Debug.Log("Sequence OnExit");
         currentIndex = 0;
     }
 
