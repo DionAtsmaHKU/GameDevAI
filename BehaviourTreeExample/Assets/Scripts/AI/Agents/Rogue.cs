@@ -18,17 +18,16 @@ public class Rogue : MonoBehaviour
 
     private BTBaseNode tree;
     private NavMeshAgent agent;
-    
-    private Animator animator;
     private Blackboard blackboard = new Blackboard();
 
     private static event Func<bool> PlayerInDanger;
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponentInChildren<Animator>();
         PlayerInDanger += IsPlayerInDanger;
     }
+
     private void Start()
     {
         //TODO: Create your Behaviour tree here
@@ -36,27 +35,28 @@ public class Rogue : MonoBehaviour
         blackboard.SetVariable(VariableNames.TARGET_POSITION_COVER, cover.position);
 
         tree = new BTSelector(
-            new BTConditionalDecorator(PlayerInDanger, new BTSequence(
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_COVER, stoppingDistance),
-                new BTStunEnemy(guard),
-                new BTWait(5)
+            new BTConditionalDecorator(PlayerInDanger, new BTParallel(
+                new BTLog("Defending", stateUI),
+                new BTSequence(
+                    new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_COVER, stoppingDistance),
+                    new BTWait(0.5f),
+                    new BTStunEnemy(guard),
+                    new BTWait(5)
+                )
             )),
 
-            new BTSequence(
+            new BTParallel(
+                new BTLog("Following", stateUI),
+                new BTReverse(new BTCheckCondition(PlayerInDanger)),
                 new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_PLAYER, stoppingDistance)
-            ));
+                ));
         tree.SetupBlackboard(blackboard);
     }
+
     private void FixedUpdate()
     {
         blackboard.SetVariable(VariableNames.TARGET_POSITION_PLAYER, player.transform.position);
-        stateUI.text = "Current State: \n" + blackboard.GetVariable<State>(VariableNames.STATE);
         tree?.Tick();
-    }
-
-    private void UpdateUI(string nodeName)
-    {
-        stateUI.text = "Current Node: \n" + nodeName;
     }
 
     private bool IsPlayerInDanger()

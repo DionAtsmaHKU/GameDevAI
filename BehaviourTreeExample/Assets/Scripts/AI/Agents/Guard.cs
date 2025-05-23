@@ -23,34 +23,22 @@ public class Guard : MonoBehaviour
 
     [Range(1, 360)] public float angle = 180f;
 
-    private Vector3 offset = new Vector3(0, -10, 0);
     private BTBaseNode tree;
     private NavMeshAgent agent;
-    private Animator animator;
     private Blackboard blackboard = new Blackboard();
 
     // private static event Func<bool> TestFunc;
     private static event Func<bool> SeesPlayer;
-    private static event Func<bool> NoPlayer;
     private static event Func<bool> HasWeapon;
     private static event Func<bool> InAttackRange;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponentInChildren<Animator>();
-        // TestFunc += ReturnFalse;
+
         SeesPlayer += GuardSeesPlayer;
-        NoPlayer += GuardNoPlayer;
         HasWeapon += GuardHasWeapon;
         InAttackRange += GuardInAttackRange;
-
-        BTBaseNode.onStateChanged += UpdateUI;
-    }
-
-    private void OnDestroy()
-    {
-        BTBaseNode.onStateChanged -= UpdateUI;
     }
 
     private void Start()
@@ -67,33 +55,42 @@ public class Guard : MonoBehaviour
         blackboard.SetVariable(VariableNames.STATE, State.PATROLLING);
         blackboard.SetVariable(VariableNames.SEES_PLAYER, false);
         blackboard.SetVariable(VariableNames.PLAYER_DEAD, false);
+        blackboard.SetVariable(VariableNames.TARGET_POSITION_PLAYER, player.transform);
 
         tree = new BTSelector(
-            // Attack
+            // Attack if the player is in range
             new BTConditionalDecorator(InAttackRange, new BTAttack()),
 
             // If it sees the player, search for a weapon, if it has a weapon, chase player
             new BTConditionalDecorator(SeesPlayer, new BTSelector(
-                new BTConditionalDecorator(HasWeapon, new BTSequence(
+                new BTConditionalDecorator(HasWeapon, new BTParallel(
+                    new BTLog("Chasing", stateUI),
                     new BTChasePlayer(agent, moveSpeed, stoppingDistance))
                 ),
-                new BTSequence(
-                    new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_WEAPON, stoppingDistance),
-                    new BTGrab(agent, VariableNames.TARGET_POSITION_WEAPON, stoppingDistance)
-                ))
+                new BTParallel(
+                    new BTLog("Searching", stateUI),
+                    new BTSequence(
+                        new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_WEAPON, stoppingDistance),
+                        new BTGrab(agent, VariableNames.TARGET_POSITION_WEAPON, stoppingDistance)
+                    ))
+                )
             ),
-            
+
             // Patrolling (if it doesnt see the player)
-             new BTConditionalDecorator(NoPlayer, new BTSequence(
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_A, stoppingDistance),
-                new BTWait(1f),
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_B, stoppingDistance),
-                new BTWait(1f),
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_C, stoppingDistance),
-                new BTWait(1f),
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_D, stoppingDistance),
-                new BTWait(1f)
-             ))
+            new BTParallel(
+                new BTLog("Patrolling", stateUI),
+                new BTReverse(new BTCheckCondition(SeesPlayer)),
+                new BTSequence(
+                    new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_A, stoppingDistance),
+                    new BTWait(1f),
+                    new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_B, stoppingDistance),
+                    new BTWait(1f),
+                    new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_C, stoppingDistance),
+                    new BTWait(1f),
+                    new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_D, stoppingDistance),
+                    new BTWait(1f)
+                )
+            )
         ); 
         tree.SetupBlackboard(blackboard);
     }
@@ -107,15 +104,7 @@ public class Guard : MonoBehaviour
             tree.OnReset();
         }
 
-        blackboard.SetVariable(VariableNames.TARGET_POSITION_PLAYER, player.transform.position); // Make this a transform reference in blackboard vars
-        //Debug.Log(blackboard.GetVariable<State>(VariableNames.STATE));
-        // stateUI.text = "Current State: \n" + blackboard.GetVariable<State>(VariableNames.STATE);
-        //Debug.Log(blackboard.GetVariable<Vector3>(VariableNames.TARGET_POSITION_WEAPON));
-    }
-
-    private void UpdateUI(string nodeName)
-    {
-        stateUI.text = "Current Node: \n" + nodeName;
+         // Make this a transform reference in blackboard vars
     }
 
     public void Stun()
@@ -147,8 +136,7 @@ public class Guard : MonoBehaviour
 
     public bool IsGuardAttacking()
     {
-        if (blackboard.GetVariable<State>(VariableNames.STATE) == State.CHASING ||
-            blackboard.GetVariable<State>(VariableNames.STATE) == State.ATTACKING)
+        if (GuardSeesPlayer())
         {
             return true;
         }
@@ -172,11 +160,11 @@ public class Guard : MonoBehaviour
 
         if (Physics.Raycast(head.position, player.transform.position - head.position, out RaycastHit hit, 1000, playerLayer))
         {
-            Debug.Log($"hit object: {hit.collider.gameObject.name}");
+            // Debug.Log($"hit object: {hit.collider.gameObject.name}");
             Debug.DrawLine(head.position, player.transform.position);
             if (hit.collider.CompareTag("Player"))
             {
-                Debug.Log("Sees player!!!!!!");
+                // Debug.Log("Sees player!!!!!!");
                 blackboard.SetVariable(VariableNames.SEES_PLAYER, true);
                 return true;
             }
@@ -195,16 +183,6 @@ public class Guard : MonoBehaviour
             return true;
         }
         return false;
-    }
-
-    private bool GuardNoPlayer()
-    {
-        if (blackboard.GetVariable<bool>(VariableNames.SEES_PLAYER) &&
-            !blackboard.GetVariable<bool>(VariableNames.PLAYER_DEAD))
-        {
-            return false;
-        }
-        return true;
     }
 
     private bool GuardHasWeapon()

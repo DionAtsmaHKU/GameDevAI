@@ -1,17 +1,20 @@
+using TMPro;
 using UnityEngine;
 
 public class BTLog : BTBaseNode
 {
     protected string textToLog;
+    private TextMeshProUGUI textUI;
 
-    public BTLog(string textToLog)
+    public BTLog(string text, TextMeshProUGUI ui)
     {
-        this.textToLog = textToLog;
+        textToLog = text;
+        textUI = ui;
     }
 
     protected override TaskStatus OnUpdate()
     {
-        Debug.Log(textToLog);
+        textUI.text = "Current State: \n" + textToLog;
         return TaskStatus.Success;
     }
 }

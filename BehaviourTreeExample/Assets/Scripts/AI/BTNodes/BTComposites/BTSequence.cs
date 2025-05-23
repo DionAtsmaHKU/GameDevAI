@@ -7,7 +7,6 @@ using UnityEngine;
 public class BTSequence : BTComposite
 {
     private int currentIndex = 0;
-    private bool alwaysRestart = false;
 
     public BTSequence(params BTBaseNode[] children) : base(children)
     { 

@@ -7,7 +7,6 @@ public class ThirdPersonCamera : MonoBehaviour
     [SerializeField] private float rotXSpeed = 30f;
     [SerializeField] private float rotYSpeed = 30f;
     [SerializeField] private Transform followTarget;
-    [SerializeField] private float smoothFollowFactor = 4f;
 
     private float angleX = 0;
     private float angleY = 0;
@@ -26,7 +25,7 @@ public class ThirdPersonCamera : MonoBehaviour
         angleX += mouseX * Time.deltaTime * rotXSpeed;
         angleY += mouseY * Time.deltaTime * rotYSpeed;
         angleY = Mathf.Clamp(angleY, -85f, 85f);
-        transform.position = followTarget.position;// Vector3.Lerp(transform.position, followTarget.position, Time.fixedDeltaTime * smoothFollowFactor);
+        transform.position = followTarget.position;
         transform.rotation = Quaternion.Euler(-angleY, angleX, 0);
     }
 

@@ -28,9 +28,8 @@ public class BTMoveToPosition : BTBaseNode
     // of handeling the different types of moving (to a static/moving point).
     protected override TaskStatus OnUpdate()
     {
-        if (agent == null || (blackboard.GetVariable<bool>(VariableNames.SEES_PLAYER) 
-                              && blackboard.GetVariable<State>(VariableNames.STATE) == State.PATROLLING))
-                              { Debug.Log("Stop patrolling NOW"); return TaskStatus.Failed; }
+        if (agent == null)
+            return TaskStatus.Failed;
 
         if (agent.pathPending)
             return TaskStatus.Running;
@@ -67,7 +66,7 @@ public class BTChasePlayer : BTBaseNode
         blackboard.SetVariable<State>(VariableNames.STATE, State.CHASING);
         agent.speed = moveSpeed;
         agent.stoppingDistance = keepDistance;
-        targetPosition = blackboard.GetVariable<Vector3>("TARGET_POSITION_PLAYER");
+        targetPosition = blackboard.GetVariable<Transform>("TARGET_POSITION_PLAYER").position;
     }
 
     // the start of this function all seems a little overcomplicated, I'll have to see if there's a better way
@@ -77,7 +76,7 @@ public class BTChasePlayer : BTBaseNode
         if (agent == null)
            return TaskStatus.Failed;
 
-        targetPosition = blackboard.GetVariable<Vector3>("TARGET_POSITION_PLAYER");
+        targetPosition = blackboard.GetVariable<Transform>("TARGET_POSITION_PLAYER").position;
 
         if (agent.pathPending) 
             return TaskStatus.Running;

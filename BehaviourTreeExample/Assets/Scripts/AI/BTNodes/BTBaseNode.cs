@@ -4,8 +4,6 @@ using UnityEngine;
 public enum TaskStatus { Success, Failed, Running }
 public abstract class BTBaseNode
 {
-    public static event Action<string> onStateChanged;
-
     //Members
     protected Blackboard blackboard;
     private bool wasEntered = false;
@@ -18,7 +16,6 @@ public abstract class BTBaseNode
         if (!wasEntered)
         {
             OnEnter();
-            onStateChanged?.Invoke(GetType().Name);
             wasEntered = true;
         }
 
