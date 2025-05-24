@@ -92,7 +92,7 @@ public class Guard : MonoBehaviour
 
     private void FixedUpdate()
     {
-        SpotPlayerLinecast();
+        SpotPlayer();
         TaskStatus result = tree.Tick();
         if (result != TaskStatus.Running)
         {
@@ -139,7 +139,7 @@ public class Guard : MonoBehaviour
     }
 
     // Sets SEES_PLAYER to true if the guard sees the player with a Raycast.
-    private bool SpotPlayerLinecast()
+    private bool SpotPlayer()
     {
         if (blackboard.GetVariable<bool>(VariableNames.PLAYER_DEAD))
         {
