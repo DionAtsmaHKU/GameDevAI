@@ -1,14 +1,4 @@
-﻿public enum State
-{
-    PATROLLING = 0,
-    SEARCHING = 1,
-    CHASING = 2,
-    ATTACKING = 3,
-    FOLLOWING = 4,
-    DEFENDING = 5
-}
-
-public static class VariableNames
+﻿public static class VariableNames
 {
     public const string TARGET_POSITION_A = "TARGET_POSITION_A";
     public const string TARGET_POSITION_B = "TARGET_POSITION_B";
