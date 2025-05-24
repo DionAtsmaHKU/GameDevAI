@@ -1,13 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+// This decorator reverses the result of a child node.
 public class BTReverse : BTDecorator
 {
-    public BTReverse(BTBaseNode child) : base(child)
-    {
-
-    }
+    public BTReverse(BTBaseNode child) : base(child) { }
 
     protected override TaskStatus OnUpdate()
     {

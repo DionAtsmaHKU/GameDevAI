@@ -22,9 +22,9 @@ public class BTGrab : BTBaseNode
 
     protected override TaskStatus OnUpdate()
     {
+        // Grab the weapon if in range
         if (Vector3.Distance(agent.transform.position, targetPosition) <= keepDistance)
         {
-            Debug.Log("GRAB !");
             blackboard.SetVariable(VariableNames.HAS_WEAPON, true);
             return TaskStatus.Success;
         }

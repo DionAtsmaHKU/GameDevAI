@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using TMPro;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -30,11 +26,14 @@ public class Rogue : MonoBehaviour
 
     private void Start()
     {
-        //TODO: Create your Behaviour tree here
-        blackboard.SetVariable(VariableNames.STATE, State.FOLLOWING);
+        // Blackboard setup
         blackboard.SetVariable(VariableNames.TARGET_POSITION_COVER, cover.position);
+        blackboard.SetVariable(VariableNames.TARGET_POSITION_PLAYER, player.transform);
 
+        // Initialising Behaviour Tree
         tree = new BTSelector(
+            
+            // If the player is in danger, the rogue runs to cover and stuns the guard
             new BTConditionalDecorator(PlayerInDanger, new BTParallel(
                 new BTLog("Defending", stateUI),
                 new BTSequence(
@@ -42,20 +41,22 @@ public class Rogue : MonoBehaviour
                     new BTWait(0.5f),
                     new BTStunEnemy(guard),
                     new BTWait(5)
+                    )
                 )
-            )),
+            ),
 
+            // The rogue follows the player around
             new BTParallel(
                 new BTLog("Following", stateUI),
                 new BTReverse(new BTCheckCondition(PlayerInDanger)),
-                new BTMoveToPosition(agent, moveSpeed, VariableNames.TARGET_POSITION_PLAYER, stoppingDistance)
-                ));
+                new BTChasePlayer(agent, moveSpeed, stoppingDistance)
+            )
+        );
         tree.SetupBlackboard(blackboard);
     }
 
     private void FixedUpdate()
     {
-        blackboard.SetVariable(VariableNames.TARGET_POSITION_PLAYER, player.transform.position);
         tree?.Tick();
     }
 

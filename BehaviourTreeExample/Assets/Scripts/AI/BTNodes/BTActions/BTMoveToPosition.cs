@@ -24,8 +24,6 @@ public class BTMoveToPosition : BTBaseNode
         targetPosition = blackboard.GetVariable<Vector3>(BBtargetPosition);
     }
 
-    // the start of this function all seems a little overcomplicated, I'll have to see if there's a better way
-    // of handeling the different types of moving (to a static/moving point).
     protected override TaskStatus OnUpdate()
     {
         if (agent == null)
@@ -47,6 +45,7 @@ public class BTMoveToPosition : BTBaseNode
     }
 }
 
+// Similar to MoveToPosition, but instead uses a Transform for chasing instead of a static position.
 public class BTChasePlayer : BTBaseNode
 {
     private NavMeshAgent agent;
@@ -63,14 +62,11 @@ public class BTChasePlayer : BTBaseNode
 
     protected override void OnEnter()
     {
-        blackboard.SetVariable<State>(VariableNames.STATE, State.CHASING);
         agent.speed = moveSpeed;
         agent.stoppingDistance = keepDistance;
         targetPosition = blackboard.GetVariable<Transform>("TARGET_POSITION_PLAYER").position;
     }
 
-    // the start of this function all seems a little overcomplicated, I'll have to see if there's a better way
-    // of handeling the different types of moving (to a static/moving point).
     protected override TaskStatus OnUpdate()
     {
         if (agent == null)
@@ -91,6 +87,5 @@ public class BTChasePlayer : BTBaseNode
             return TaskStatus.Success;
         }
         return TaskStatus.Running;
-
     }
 }

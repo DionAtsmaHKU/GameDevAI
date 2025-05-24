@@ -1,6 +1,6 @@
 using TMPro;
-using UnityEngine;
 
+// Logs a message to the UI above an agent.
 public class BTLog : BTBaseNode
 {
     protected string textToLog;
